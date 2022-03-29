@@ -1,0 +1,20 @@
+#!/bin/sh
+
+dir=$(mktemp -d)
+parsedHTML=$(pandoc "$1")
+
+parsedHTML=$(echo "$parsedHTML" | sed -e 's/-\&gt;/\&#10230;/g') # Use real arrows
+
+cd "$dir"
+
+cat ~/.local/share/print-md/before.html > template.html
+echo "$parsedHTML" >> template.html
+cat ~/.local/share/print-md/after.html >> template.html
+
+/bin/brave \
+  --headless \
+  --print-to-pdf-no-header \
+  --print-to-pdf="./rendered.pdf" \
+  "file://$dir/template.html" &>/dev/null
+
+zathura rendered.pdf && rm -r "$dir"
